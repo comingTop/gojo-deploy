@@ -1,0 +1,28 @@
+{
+  "tiktok_username": "jailton.mma",
+  "timezone": "America/Sao_Paulo",
+  "global_min_interval_s": 1.5,
+  "reactions": [
+    {"id": "flash", "label": "Flash / Teleporte", "gift": {"name": "Rose", "min_coins": 1},
+     "action": {"command": "teleport_fly", "params": {}}, "voice_clip": "voice/output/flash.wav",
+     "overlay_cue": "menu.flash", "cooldown_s": 6},
+    {"id": "azul", "label": "Azul - atracao", "gift": {"name": "GG", "min_coins": 1},
+     "action": {"command": "pull_npcs", "params": {"radius": 12}}, "voice_clip": "voice/output/azul.wav",
+     "overlay_cue": "menu.azul", "cooldown_s": 6},
+    {"id": "vermelho", "label": "Vermelho - repulsao", "gift": {"name": "Perfume", "min_coins": 20},
+     "action": {"command": "push_npcs", "params": {"force": 150}}, "voice_clip": "voice/output/vermelho.wav",
+     "overlay_cue": "menu.vermelho", "cooldown_s": 8},
+    {"id": "roxo", "label": "Roxo - Hollow Purple", "gift": {"name": "Galaxy", "min_coins": 100},
+     "action": {"command": "explode", "params": {"radius": 15}}, "voice_clip": "voice/output/roxo.wav",
+     "overlay_cue": "menu.roxo", "cooldown_s": 10},
+    {"id": "infinito", "label": "Infinito / Limitless", "gift": {"name": "Diamond", "min_coins": 300},
+     "action": {"command": "invincible_slowmo", "params": {"duration_s": 10, "scale": 0.4}},
+     "voice_clip": "voice/output/infinito.wav", "overlay_cue": "menu.infinito", "cooldown_s": 15},
+    {"id": "seis_olhos", "label": "Seis Olhos", "gift": {"name": "Fireworks", "min_coins": 500},
+     "action": {"command": "bullet_time", "params": {"duration_s": 8, "scale": 0.3}},
+     "voice_clip": "voice/output/seis_olhos.wav", "overlay_cue": "menu.seis_olhos", "cooldown_s": 15},
+    {"id": "dominio", "label": "Expansao de Dominio", "gift": {"name": "Universe", "min_coins": 1000},
+     "action": {"command": "domain_expansion", "params": {"weather": "THUNDER", "attackers": 6}},
+     "voice_clip": "voice/output/dominio.wav", "overlay_cue": "menu.dominio", "cooldown_s": 30}
+  ]
+}

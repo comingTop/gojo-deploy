@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reações do Gojo</title>
+<style>
+  :root { --purple:#a35bff; --blue:#4aa8ff; --red:#ff4d6a; }
+  html,body { margin:0; background:transparent; font-family:"Segoe UI",system-ui,sans-serif; }
+  #panel { width:300px; padding:12px 14px; border-radius:16px; color:#fff;
+    background:linear-gradient(160deg, rgba(20,14,40,.82), rgba(12,10,24,.82));
+    border:1px solid rgba(74,168,255,.45); box-shadow:0 0 22px rgba(74,168,255,.28); }
+  #title { font-weight:800; letter-spacing:.12em; font-size:14px; margin-bottom:10px;
+    background:linear-gradient(90deg,var(--blue),var(--purple)); -webkit-background-clip:text;
+    background-clip:text; color:transparent; }
+  .item { display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:10px;
+    background:rgba(255,255,255,.04); margin-bottom:6px; font-size:13px; transition:.2s; }
+  .item:last-child{ margin-bottom:0; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:0 0 9px; background:var(--purple); }
+  .label { flex:1; font-weight:600; }
+  .item.flash { background:rgba(163,91,255,.9); box-shadow:0 0 18px var(--purple);
+    transform:scale(1.04); }
+  .item.flash .dot { background:#fff; }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <div id="title">PRESENTE → REAÇÃO</div>
+    <div id="list"></div>
+  </div>
+<script>
+  // Mirrors orchestrator/config/reactions.json (labels + ids). Kept here so the
+  // overlay is a self-contained OBS browser source; the hub only sends cue ids.
+  const ITEMS = [
+    {id:"flash",      label:"Flash / Teleporte"},
+    {id:"azul",       label:"Azul — atração"},
+    {id:"vermelho",   label:"Vermelho — repulsão"},
+    {id:"roxo",       label:"Roxo — Hollow Purple"},
+    {id:"infinito",   label:"Infinito / Limitless"},
+    {id:"seis_olhos", label:"Seis Olhos"},
+    {id:"dominio",    label:"Expansão de Domínio"},
+  ];
+  const list = document.getElementById("list");
+  list.innerHTML = ITEMS.map(i =>
+    `<div class="item" id="it-${i.id}"><span class="dot"></span><span class="label">${i.label}</span></div>`
+  ).join("");
+
+  function flash(id){
+    const el = document.getElementById("it-" + id);
+    if(!el) return;
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 1400);
+  }
+
+  const WS = new URLSearchParams(location.search).get("ws") || "ws://127.0.0.1:8765";
+  function connect(){
+    const ws = new WebSocket(WS);
+    ws.onmessage = ev => { const m = JSON.parse(ev.data); if(m.type === "cue") flash(m.id); };
+    ws.onclose = () => setTimeout(connect, 1500);
+  }
+  connect();
+</script>
+</body>
+</html>

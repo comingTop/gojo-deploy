@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TOP 3</title>
+<style>
+  :root { --purple:#a35bff; --blue:#4aa8ff; --gold:#ffd24a; }
+  html,body { margin:0; background:transparent; font-family:"Segoe UI",system-ui,sans-serif; }
+  #panel {
+    width:320px; padding:14px 16px; border-radius:16px;
+    background:linear-gradient(160deg, rgba(20,14,40,.82), rgba(12,10,24,.82));
+    border:1px solid rgba(163,91,255,.5);
+    box-shadow:0 0 24px rgba(163,91,255,.35), inset 0 0 20px rgba(74,168,255,.08);
+    color:#fff;
+  }
+  #title { font-weight:800; letter-spacing:.14em; font-size:15px;
+    background:linear-gradient(90deg,var(--blue),var(--purple)); -webkit-background-clip:text;
+    background-clip:text; color:transparent; margin-bottom:10px; }
+  .row { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:10px;
+    background:rgba(255,255,255,.04); margin-bottom:6px; animation:in .35s ease; }
+  .row:last-child { margin-bottom:0; }
+  .medal { width:26px; height:26px; flex:0 0 26px; border-radius:50%; display:grid; place-items:center;
+    font-weight:800; font-size:13px; color:#1a1030; }
+  .r1 .medal{ background:var(--gold);} .r2 .medal{ background:#cdd6e4;} .r3 .medal{ background:#e08b4a;}
+  .name { flex:1; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .coins { font-weight:800; font-size:14px; color:var(--blue); }
+  .coins::after{ content:" ◈"; color:var(--purple); font-size:11px; }
+  .empty { opacity:.5; font-size:13px; padding:6px 4px; }
+  @keyframes in { from{ opacity:0; transform:translateX(12px);} to{ opacity:1; transform:none;} }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <div id="title">TOP 3 · DOADORES</div>
+    <div id="list"><div class="empty">aguardando presentes…</div></div>
+  </div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const WS = params.get("ws") || "ws://127.0.0.1:8765";
+  const list = document.getElementById("list");
+
+  function render(entries){
+    if(!entries || !entries.length){ list.innerHTML = '<div class="empty">aguardando presentes…</div>'; return; }
+    list.innerHTML = entries.slice(0,3).map(e =>
+      `<div class="row r${e.rank}">
+         <div class="medal">${e.rank}</div>
+         <div class="name">${escapeHtml(e.username)}</div>
+         <div class="coins">${e.coins.toLocaleString("pt-BR")}</div>
+       </div>`).join("");
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+  function connect(){
+    const ws = new WebSocket(WS);
+    ws.onmessage = ev => { const m = JSON.parse(ev.data); if(m.type === "top3") render(m.entries); };
+    ws.onclose = () => setTimeout(connect, 1500);   // auto-reconnect for OBS stability
+  }
+  connect();
+</script>
+</body>
+</html>

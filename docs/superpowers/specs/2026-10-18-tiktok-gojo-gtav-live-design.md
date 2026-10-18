@@ -42,9 +42,11 @@ before/at kickoff — they do not block the build but they change expectations:
 - **LIVE access is an unverified hard prerequisite.** PC→TikTok streaming needs the
   account to have LIVE + PC/RTMP access (~1,000 followers, 18+, good standing). The chat
   only gave us the handle. **If @jailton.mma cannot PC-stream, nothing streams.** → `§11 P1`.
-- **Realistic cloud cost is ~R$150–205/month**, above the quoted R$80–150. Shadow PC is a
-  flat ≈R$194/mo; metered AWS GPU ≈R$150–180/mo. Correct this with the client to avoid a
-  billing surprise. → `§9 R6`.
+- **Realistic cloud cost is ~R$135–160/month** on AirGPU (T4 @ $0.65/hr × ~30 h + a
+  GTA-sized ~150 GB persistent disk = all-in ~$27–30), i.e. around the **top edge** of the
+  quoted R$80–150 — close, not wildly above. (Earlier Shadow-based ≈R$194 estimate was
+  revised down after live verification on 2026-10-18.) Confirm storage size + VAT with the
+  client. → `§9 R6`.
 - **"Low risk" is optimistic; the honest level is low–medium** and stackable (GTA mods
   must be non-commercial + no third-party IP; Gojo is third-party IP; gifts are
   monetization; runs from a datacenter). Manageable with the mitigations in `§9`.
@@ -62,7 +64,7 @@ before/at kickoff — they do not block the build but they change expectations:
 | GTA gift bridge | **Custom Python orchestrator** → HTTP → forked `smeysu/GTA5-TikTok-Integration` in-game plugin | One codebase we own; voice, overlays, ranking, Telegram, combo logic all live together. TikFinity kept only as a no-code capture fallback. |
 | Streaming + remote control | **OBS + TikTok RTMP**, driven by Telegram via **obs-websocket** | Programmatic start/stop = genuine remote liga/desliga. Key-refresh documented. |
 | Voice | **Chatterbox Multilingual (Resemble AI)**, self-hosted | MIT license → unrestricted commercial use, pt-BR fine-tune, zero-shot cloning for an **original** Gojo voice, generate once / own forever / no subscription. |
-| Cloud host | **Shadow PC (primary)** / AWS g4dn Windows (alternative) | Flat-rate persistent Windows gaming PC with admin + mod persistence is the simplest turnkey host. |
+| Cloud host | **AirGPU (primary)** — Shadow Neo Lite / AWS g4dn Windows (alternatives) | Full Windows GPU VM (AWS-backed) that runs modded GTA V + OBS, **serves Brazil**, bills **persistent storage flat while OFF**, has **no session/idle caps** (fits an autonomous Telegram-controlled box), and is the only option landing near the client's budget (**~R$135–160/mo** all-in). Shadow's 4 h/120 h caps + 30-min idle shutdown + no-Brazil fight an unattended box; AWS is the enterprise fallback. |
 
 ---
 
@@ -169,8 +171,9 @@ dependencies — so it can be built and tested in isolation.
 
 ### 4.6 `telegram_bot`
 - **Purpose:** the client's only control surface. Commands (PT-BR):
-  `/ligar` (start OBS stream via obs-websocket + enable engine), `/desligar` (stop),
-  `/status` (connection, viewers if available, uptime, last gift), `/testar <reação>`
+  `/ligar` (start OBS stream via obs-websocket + enable engine), `/desligar` (stop stream +
+  engine, and power off the cloud VM for bill-protection — see `§7`/R9),
+  `/status` (connection, viewers if available, uptime, **VM uptime**, last gift), `/testar <reação>`
   (fire a reaction for setup testing), `/ranking` (current TOP-3).
 - **Impl:** `python-telegram-bot` (or `aiogram`). **Auth:** restrict to allowed chat IDs
   (client + freelancer) from config; ignore everyone else.
@@ -258,10 +261,17 @@ Each reaction has one short original PT-BR Gojo line (script in `voice/lines.pt-
 
 ## 7. Deployment & turnkey delivery model
 
-**Host:** Shadow PC (primary) — a persistent Windows 11 cloud PC with admin rights; mods
-and the game survive across sessions; flat monthly fee. (Alt: AWS g4dn.xlarge Windows +
-persistent EBS.) The **freelancer performs the one-time setup on this machine** so the
-client receives a working system.
+**Host:** AirGPU (primary) — a full Windows GPU VM (AWS-backed) that runs modded GTA V + OBS,
+is available to Brazilian buyers, and bills **persistent storage flat while the machine is
+OFF** (the decisive cost factor); ~R$135–160/mo all-in for ~30 h + a ~150 GB disk. It has
+**no idle auto-shutdown** — good for an always-ready autonomous box, **but a forgotten
+running session bills continuously**, so we build a **bill-protection auto-stop**: Telegram
+`/desligar` stops the VM (provider API / scheduled task) and an **idle watchdog** powers it
+down after N minutes with no live, plus a hard daily kill-timer. GTA auto-update is pinned/
+disabled to protect ScriptHookV (`§9 R3`). (Alternatives: Shadow Neo Lite — simpler flat fee
+but 4 h/120 h caps + 30-min idle shutdown + no Brazil; AWS g4dn Windows + EBS — enterprise
+fallback.) The **freelancer performs the one-time setup on this machine** so the client
+receives a working system.
 
 **Autostart:** the orchestrator + OBS + GTA launch-helpers are registered to start on
 login (Task Scheduler / startup scripts Claude provides), so after a reboot the machine
@@ -299,9 +309,11 @@ clicks, but a human executes these once.
 | R3 | ScriptHookV breaks on GTA updates | med | Pin GTA version / disable auto-update on the host; document the "wait for SHV update + re-copy" recovery. |
 | R4 | Voice/likeness IP (Gojo = Shueisha/MAPPA) | low–med | **Original** AI voice (never clone the dub actor); "inspired-by" framing; no official logos/art/soundtrack; royalty-free music; keep license records; be ready to rebrand. |
 | R5 | GTA EULA: mods must be non-commercial + no 3rd-party IP; monetized modded stream is a gray zone | low–med | SP only (never GTA Online on the modded install); no selling mods; document the gray zone; not legal advice — advise the client to confirm. |
-| R6 | Cloud cost above quote (R$150–205 vs R$80–150) | — | Correct with the client up front; pick flat-rate Shadow or cost-capped metered AWS. |
+| R6 | Cloud cost vs quote | — | AirGPU all-in ~R$135–160/mo (near top of the R$80–150 quote) — correct the small gap with the client; keep storage ~100–150 GB; rely on the auto-stop (R9) to prevent overruns. |
 | R7 | TikTok RTMP key short-lived → remote go-live friction | low | Document key-refresh; helper where allowed; `/ligar` controls stream+engine via obs-websocket. |
 | R8 | Datacenter login flags the TikTok account | low–med | Prefer a stable residential-like path for the account login; keep 2FA recovery with the client; avoid rapid geo changes. |
+| R9 | AirGPU has no idle auto-shutdown → runaway bill if left running | med | Idle watchdog + `/desligar` stops the VM; hard daily kill-timer; `/status` shows VM uptime. |
+| R10 | AirGPU ToS may not cover unattended automation/scripts | low–med | Confirm with AirGPU support before committing the client's card (`§11 P6`); keep a Shadow/AWS fallback ready. |
 
 **Nothing here is legal advice.** For a monetized operation, the client should confirm the
 current Rockstar EULA and consider a Brazilian IP lawyer before scaling.
@@ -340,6 +352,10 @@ current Rockstar EULA and consider a Brazilian IP lawyer before scaling.
 - **P3 — Cloud provider + payment:** who owns the account and card (client, per chat).
 - **P4 — TikTok credentials for the host login** (handled securely; account stays client's).
 - **P5 — Gojo reference voice clip** approved by the client for the original voice.
+- **P6 — AirGPU ToS + GTA sizing:** AirGPU supports game-streaming/OBS/mods by design, but
+  **unattended automation / custom scripts are not explicitly authorized** on any reachable
+  page — confirm with AirGPU support before committing the client's card. Decide GTA edition/
+  disk size (Legacy ~95 GB fits a 100 GB block ≈ R$135; Enhanced ~100–120 GB needs 150 GB ≈ R$153).
 
 ---
 

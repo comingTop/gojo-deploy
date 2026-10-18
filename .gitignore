@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Secrets / local config ---
+.env
+*.local.json
+config.local.*
+secrets/
+*.key
+
+# --- Runtime / state ---
+*.sqlite
+*.sqlite3
+*.db
+logs/
+*.log
+
+# --- Generated voice audio (large; regenerate from scripts) ---
+# Keep the generation scripts + line scripts in git, not the rendered wavs.
+voice/output/
+*.wav.tmp
+
+# --- GTA / C# build artifacts ---
+bin/
+obj/
+*.user
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

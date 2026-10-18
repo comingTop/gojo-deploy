@@ -21,6 +21,7 @@ class ReactionEngine:
         self.adapter = adapter
         self.state = state
         self._now = now
+        self.enabled = True  # /desligar flips this off; gifts are ignored while off
         self._last_fired: dict[str, float] = {}
         self._last_any_fired: float = float("-inf")
 
@@ -31,6 +32,8 @@ class ReactionEngine:
         return None
 
     async def handle_gift(self, event: GiftEvent) -> Reaction | None:
+        if not self.enabled:
+            return None
         if not event.is_combo_end:
             return None
         self.state.record_gift(event.user_id, event.username, event.total_coins, event.timestamp)

@@ -59,6 +59,7 @@ async def _run_live(config_dir: Path) -> None:
     from .control.telegram_bot import TelegramControl
     from .control.watchdog import IdleWatchdog
     from .sources.tiktok import TikTokLiveGiftSource
+    from .voice.player import VoicePlayer
 
     app_cfg = load_config(config_dir / "reactions.json")
     rt = load_runtime_config(config_dir / "config.local.json")
@@ -77,6 +78,7 @@ async def _run_live(config_dir: Path) -> None:
                             on_idle=lambda: controller.stop_live(stop_vm=True))
     source = TikTokLiveGiftSource(app_cfg.tiktok_username,
                                   sign_api_key=rt.eulerstream.api_key or None)
+    voice = VoicePlayer(root=str(_repo_root()), device=rt.voice.device)
 
     tg = TelegramControl(rt.telegram.bot_token, controller, rt.telegram.allowed_chat_ids).build_app()
     await tg.initialize()
@@ -90,7 +92,7 @@ async def _run_live(config_dir: Path) -> None:
 
     try:
         await asyncio.gather(
-            run_live_session(source, engine, overlay, watchdog=watchdog),
+            run_live_session(source, engine, overlay, voice=voice, watchdog=watchdog),
             _watchdog_loop(),
         )
     finally:

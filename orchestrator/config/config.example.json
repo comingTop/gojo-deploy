@@ -3,5 +3,6 @@
   "obs_websocket": {"host": "127.0.0.1", "port": 4455, "password": "PUT-OBS-WS-PASSWORD-HERE"},
   "gta_adapter": {"base_url": "http://127.0.0.1:6721"},
   "eulerstream": {"api_key": ""},
-  "airgpu": {"stop_on_idle_minutes": 15}
+  "airgpu": {"stop_on_idle_minutes": 15},
+  "voice": {"device": "CABLE Input (VB-Audio Virtual Cable)"}
 }

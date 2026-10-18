@@ -29,6 +29,10 @@ class AirgpuCfg(BaseModel):
     stop_on_idle_minutes: int = 15
 
 
+class VoiceCfg(BaseModel):
+    device: str | None = None  # output device name routed into OBS (e.g. "CABLE Input")
+
+
 class RuntimeConfig(BaseModel):
     """Host-local settings + secrets (config.local.json, gitignored)."""
 
@@ -37,6 +41,7 @@ class RuntimeConfig(BaseModel):
     gta_adapter: GtaCfg = Field(default_factory=GtaCfg)
     eulerstream: EulerCfg = Field(default_factory=EulerCfg)
     airgpu: AirgpuCfg = Field(default_factory=AirgpuCfg)
+    voice: VoiceCfg = Field(default_factory=VoiceCfg)
 
 
 def load_runtime_config(path: str | Path) -> RuntimeConfig:

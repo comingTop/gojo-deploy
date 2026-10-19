@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import urllib.error
 import urllib.request
 
 from ..models import Reaction
+
+# Gojo powers-mod (JJK.Class1) keybinds -> Windows virtual-key codes.
+_VK = {"U": 0x55, "J": 0x4A, "H": 0x48, "I": 0x49, "Y": 0x59}
 
 
 class GtaAdapter:
@@ -43,8 +47,28 @@ class GtaAdapter:
             self.last_error = str(exc)
             raise
 
+    def _send_key(self, key: str) -> None:
+        """Simulate the Gojo powers-mod keybind locally (Windows). The mod's SHVDN
+        KeyDown hook catches it when GTA is the foreground window (it always is in
+        production). No-op/soft-fail off Windows so tests stay green."""
+        vk = _VK.get(key.strip().upper())
+        if vk is None:
+            return
+        try:
+            import ctypes
+
+            user32 = ctypes.windll.user32  # type: ignore[attr-defined]
+            sc = user32.MapVirtualKeyW(vk, 0)
+            user32.keybd_event(vk, sc, 0x0008, 0)  # KEYEVENTF_SCANCODE (down)
+            time.sleep(0.05)
+            user32.keybd_event(vk, sc, 0x000A, 0)  # SCANCODE | KEYUP
+        except Exception as exc:  # pragma: no cover - platform/runtime dependent
+            self.last_error = f"keybind {key}: {exc}"
+
     async def play(self, reaction: Reaction) -> None:
         await asyncio.to_thread(self._get, self.build_path(reaction))
+        if reaction.action.key:
+            await asyncio.to_thread(self._send_key, reaction.action.key)
 
     async def health(self) -> bool:
         try:

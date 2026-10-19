@@ -2,27 +2,34 @@
   "tiktok_username": "jailton.mma",
   "timezone": "America/Sao_Paulo",
   "global_min_interval_s": 1.5,
+  "_note": "action.command/params map to the smeysu GTAVWebhook HTTP API (GET /<command>:<params> on 127.0.0.1:6721) OR to the Gojo powers mod (JJK.Class1) via a keybind simulated locally with SendInput. gift.name must match the TikTok gift; min_coins verified vs 2026 values. Domain Expansion moved from Universe (~$470, too expensive) to Galaxy (~$14) per client 2026-10-19; Hollow Purple moved to Whale.",
   "reactions": [
     {"id": "flash", "label": "Flash / Teleporte", "gift": {"name": "Rose", "min_coins": 1},
-     "action": {"command": "teleport_fly", "params": {}}, "voice_clip": "voice/output/flash.wav",
-     "overlay_cue": "menu.flash", "cooldown_s": 6},
-    {"id": "azul", "label": "Azul - atracao", "gift": {"name": "GG", "min_coins": 1},
-     "action": {"command": "pull_npcs", "params": {"radius": 12}}, "voice_clip": "voice/output/azul.wav",
-     "overlay_cue": "menu.azul", "cooldown_s": 6},
-    {"id": "vermelho", "label": "Vermelho - repulsao", "gift": {"name": "Perfume", "min_coins": 20},
-     "action": {"command": "push_npcs", "params": {"force": 150}}, "voice_clip": "voice/output/vermelho.wav",
-     "overlay_cue": "menu.vermelho", "cooldown_s": 8},
-    {"id": "roxo", "label": "Roxo - Hollow Purple", "gift": {"name": "Galaxy", "min_coins": 100},
-     "action": {"command": "explode", "params": {"radius": 15}}, "voice_clip": "voice/output/roxo.wav",
-     "overlay_cue": "menu.roxo", "cooldown_s": 10},
-    {"id": "infinito", "label": "Infinito / Limitless", "gift": {"name": "Diamond", "min_coins": 300},
-     "action": {"command": "invincible_slowmo", "params": {"duration_s": 10, "scale": 0.4}},
+     "power": {"mod": "gojo", "key": null}, "action": {"command": "skydive", "params": {}},
+     "voice_clip": "voice/output/flash.wav", "overlay_cue": "menu.flash", "cooldown_s": 6},
+
+    {"id": "azul", "label": "Azul - Atracao", "gift": {"name": "GG", "min_coins": 1},
+     "power": {"mod": "gojo", "key": "U"}, "action": {"command": "spawn_attackers", "params": {"count": 3}},
+     "voice_clip": "voice/output/azul.wav", "overlay_cue": "menu.azul", "cooldown_s": 6},
+
+    {"id": "vermelho", "label": "Vermelho - Repulsao", "gift": {"name": "Perfume", "min_coins": 20},
+     "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
+     "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},
+
+    {"id": "infinito", "label": "Infinito / Limitless", "gift": {"name": "Hand Hearts", "min_coins": 100},
+     "power": {"mod": "gojo", "key": "H"}, "action": {"command": "give_weapon", "params": {"name": "Minigun"}},
      "voice_clip": "voice/output/infinito.wav", "overlay_cue": "menu.infinito", "cooldown_s": 15},
-    {"id": "seis_olhos", "label": "Seis Olhos", "gift": {"name": "Fireworks", "min_coins": 500},
-     "action": {"command": "bullet_time", "params": {"duration_s": 8, "scale": 0.3}},
+
+    {"id": "seis_olhos", "label": "Seis Olhos", "gift": {"name": "Corgi", "min_coins": 299},
+     "power": {"mod": "gojo", "key": null}, "action": {"command": "set_weather", "params": {"type": "ThunderStorm"}},
      "voice_clip": "voice/output/seis_olhos.wav", "overlay_cue": "menu.seis_olhos", "cooldown_s": 15},
-    {"id": "dominio", "label": "Expansao de Dominio", "gift": {"name": "Universe", "min_coins": 1000},
-     "action": {"command": "domain_expansion", "params": {"weather": "THUNDER", "attackers": 6}},
-     "voice_clip": "voice/output/dominio.wav", "overlay_cue": "menu.dominio", "cooldown_s": 30}
+
+    {"id": "dominio", "label": "Expansao de Dominio (Vazio Ilimitado)", "gift": {"name": "Galaxy", "min_coins": 1000},
+     "power": {"mod": "gojo", "key": "I"}, "action": {"command": "spawn_attackers_and_shoot", "params": {"count": 6}},
+     "voice_clip": "voice/output/dominio.wav", "overlay_cue": "menu.dominio", "cooldown_s": 30},
+
+    {"id": "roxo", "label": "Roxo - Hollow Purple", "gift": {"name": "Whale diving", "min_coins": 2150},
+     "power": {"mod": "gojo", "key": "Y"}, "action": {"command": "max_wanted", "params": {}},
+     "voice_clip": "voice/output/roxo.wav", "overlay_cue": "menu.roxo", "cooldown_s": 20}
   ]
 }

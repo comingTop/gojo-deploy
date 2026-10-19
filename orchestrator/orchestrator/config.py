@@ -27,11 +27,17 @@ class ActionConfig(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
 
 
+class PowerConfig(BaseModel):
+    mod: str = ""
+    key: str | None = None  # Gojo powers-mod keybind to simulate (e.g. "I")
+
+
 class ReactionConfig(BaseModel):
     id: str
     label: str
     gift: GiftMatch
     action: ActionConfig
+    power: PowerConfig | None = None
     voice_clip: str | None = None
     overlay_cue: str | None = None
     cooldown_s: float = 5.0
@@ -40,7 +46,11 @@ class ReactionConfig(BaseModel):
         return Reaction(
             id=self.id,
             label=self.label,
-            action=ActionSpec(command=self.action.command, params=dict(self.action.params)),
+            action=ActionSpec(
+                command=self.action.command,
+                params=dict(self.action.params),
+                key=(self.power.key if self.power else None),
+            ),
             voice_clip=self.voice_clip,
             overlay_cue=self.overlay_cue,
             cooldown_s=self.cooldown_s,

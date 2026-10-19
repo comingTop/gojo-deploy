@@ -8,6 +8,7 @@ from typing import Any
 class ActionSpec:
     command: str
     params: dict[str, Any] = field(default_factory=dict)
+    key: str | None = None  # Gojo powers-mod keybind (e.g. "I") simulated in-game
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,9 +4,9 @@
   "global_min_interval_s": 1.5,
   "_note": "action.command/params map to the smeysu GTAVWebhook HTTP API (GET /<command>:<params> on 127.0.0.1:6721) OR to the Gojo powers mod (JJK.Class1) via a keybind simulated locally with SendInput. gift.name must match the TikTok gift; min_coins verified vs 2026 values. Domain Expansion moved from Universe (~$470, too expensive) to Galaxy (~$14) per client 2026-10-19; Hollow Purple moved to Whale.",
   "reactions": [
-    {"id": "flash", "label": "Flash / Teleporte", "gift": {"name": "Rose", "min_coins": 1},
-     "power": {"mod": "gojo", "key": null}, "action": {"command": "skydive", "params": {}},
-     "voice_clip": "voice/output/flash.wav", "overlay_cue": "menu.flash", "cooldown_s": 6},
+    {"id": "flash", "label": "Infinito / Limitless (Rosa)", "gift": {"name": "Rose", "min_coins": 1},
+     "power": {"mod": "gojo", "key": "H"}, "action": {"command": "health", "params": {}},
+     "voice_clip": "voice/output/infinito.wav", "overlay_cue": "menu.infinito", "cooldown_s": 6},
 
     {"id": "azul", "label": "Azul - Atracao", "gift": {"name": "GG", "min_coins": 1},
      "power": {"mod": "gojo", "key": "U"}, "action": {"command": "spawn_attackers", "params": {"count": 3}},

@@ -31,12 +31,38 @@ class ObsController:
             self._client = obs.ReqClient(host=host, port=port, password=password)
         return self._client
 
+    def _output_active(self, client) -> bool:
+        # OBS returns request code 501 if you start/stop streaming while the
+        # output is already in the target state. In the LIVE Studio setup OBS
+        # only runs the Virtual Camera and never RTMP-streams, so a blind
+        # stop_stream() would always 501 and, unhandled, kill the event loop.
+        try:
+            return bool(getattr(client.get_stream_status(), "output_active", False))
+        except Exception:
+            return False
+
     async def start_stream(self) -> None:
-        await asyncio.to_thread(lambda: self._ensure().start_stream())
+        def _start() -> None:
+            client = self._ensure()
+            try:
+                if not self._output_active(client):
+                    client.start_stream()
+            except Exception:
+                pass
+
+        await asyncio.to_thread(_start)
         self._streaming = True
 
     async def stop_stream(self) -> None:
-        await asyncio.to_thread(lambda: self._ensure().stop_stream())
+        def _stop() -> None:
+            client = self._ensure()
+            try:
+                if self._output_active(client):
+                    client.stop_stream()
+            except Exception:
+                pass
+
+        await asyncio.to_thread(_stop)
         self._streaming = False
 
     def is_streaming(self) -> bool:

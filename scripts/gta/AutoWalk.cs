@@ -30,11 +30,6 @@ public class AutoWalk : Script
     // How often we re-check whether he needs a new wander task.
     private const double CheckEverySeconds = 3.0;
 
-    // A flat, open, pedestrian-heavy spot (Legion Square, downtown Los Santos)
-    // so Gojo's auto-wander reads as a busy sidewalk/plaza, away from the house.
-    private static readonly GTA.Math.Vector3 SidewalkSpot =
-        new GTA.Math.Vector3(195.17f, -933.77f, 30.69f);
-
     public AutoWalk()
     {
         Interval = 300;
@@ -99,16 +94,14 @@ public class AutoWalk : Script
     }
 
     // Proven SHVDN teleport: assign a new Vector3 to the ped's Position
-    // (ScriptHookVDotNet How-Tos wiki). Pre-stream collision at the target so
-    // Gojo doesn't drop through the unloaded map on a long interior->downtown jump.
+    // (ScriptHookVDotNet How-Tos wiki). Legion Square -- a flat, open,
+    // pedestrian-heavy downtown plaza that reads as a busy sidewalk on stream.
     private void TeleportToSidewalk()
     {
         Ped p = Game.Player.Character;
         if (p == null || !p.Exists()) return;
 
-        Function.Call(Hash.REQUEST_COLLISION_AT_COORD,
-            SidewalkSpot.X, SidewalkSpot.Y, SidewalkSpot.Z);
-        p.Position = SidewalkSpot;
+        p.Position = new GTA.Math.Vector3(195.17f, -933.77f, 30.69f);
         p.Task.ClearAll();
         // Pause the auto-wander briefly while the plaza streams in.
         suspendUntil = DateTime.UtcNow.AddSeconds(2.0);

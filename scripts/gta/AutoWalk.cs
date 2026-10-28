@@ -10,6 +10,8 @@ using GTA.Native;
 //
 // Behaviour:
 //   * ON by default. Toggle with F7 (on-screen notify).
+//   * F8 teleports Gojo out to a flat, pedestrian-heavy plaza (Legion Square)
+//     so his wander reads as a busy sidewalk on stream instead of a house.
 //   * Every few seconds, if Gojo is just standing still, kick off a natural
 //     TASK_WANDER_STANDARD so he walks the sidewalks by himself.
 //   * When a gift fires a Gojo power (keys H / J / U / Y / I -- same keys the
@@ -28,6 +30,11 @@ public class AutoWalk : Script
     // How often we re-check whether he needs a new wander task.
     private const double CheckEverySeconds = 3.0;
 
+    // A flat, open, pedestrian-heavy spot (Legion Square, downtown Los Santos)
+    // so Gojo's auto-wander reads as a busy sidewalk/plaza, away from the house.
+    private static readonly GTA.Math.Vector3 SidewalkSpot =
+        new GTA.Math.Vector3(195.17f, -933.77f, 30.69f);
+
     public AutoWalk()
     {
         Interval = 300;
@@ -42,6 +49,12 @@ public class AutoWalk : Script
             enabled = !enabled;
             UI.Notify("Gojo Auto-Walk: " + (enabled ? "~g~ON" : "~r~OFF"));
             if (!enabled) StopWalking();
+            return;
+        }
+
+        if (e.KeyCode == Keys.F8)
+        {
+            TeleportToSidewalk();
             return;
         }
 
@@ -83,5 +96,22 @@ public class AutoWalk : Script
         Ped p = Game.Player.Character;
         if (p != null && p.Exists())
             p.Task.ClearAll();
+    }
+
+    // Proven SHVDN teleport: assign a new Vector3 to the ped's Position
+    // (ScriptHookVDotNet How-Tos wiki). Pre-stream collision at the target so
+    // Gojo doesn't drop through the unloaded map on a long interior->downtown jump.
+    private void TeleportToSidewalk()
+    {
+        Ped p = Game.Player.Character;
+        if (p == null || !p.Exists()) return;
+
+        Function.Call(Hash.REQUEST_COLLISION_AT_COORD,
+            SidewalkSpot.X, SidewalkSpot.Y, SidewalkSpot.Z);
+        p.Position = SidewalkSpot;
+        p.Task.ClearAll();
+        // Pause the auto-wander briefly while the plaza streams in.
+        suspendUntil = DateTime.UtcNow.AddSeconds(2.0);
+        UI.Notify("Gojo teleported to the plaza ~g~(sidewalk)");
     }
 }

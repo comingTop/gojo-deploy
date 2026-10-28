@@ -3,7 +3,7 @@ using System.Windows.Forms;
 using GTA;
 using GTA.Native;
 
-// Gojo Auto-Walk  (ScriptHookVDotNet v2 loose-source script)
+// Gojo Auto-Walk  (ScriptHookVDotNet v3 / Enhanced loose-source script)
 //
 // Makes the player ped (Gojo) stroll around on his own like an ambient NPC, and
 // can teleport him to a busy plaza so his wander reads as a sidewalk on stream.
@@ -51,7 +51,7 @@ public class AutoWalk : Script
         if (e.KeyCode == Keys.F7)
         {
             enabled = !enabled;
-            UI.Notify("Gojo Auto-Walk: " + (enabled ? "~g~ON" : "~r~OFF"));
+            GTA.UI.Notification.Show("Gojo Auto-Walk: " + (enabled ? "~g~ON" : "~r~OFF"));
             if (!enabled) ClearTasks();
             return;
         }
@@ -83,7 +83,7 @@ public class AutoWalk : Script
             Function.Call(Hash.CLEAR_PED_TASKS, p);
             holdUntil = DateTime.UtcNow.AddSeconds(2.0);   // pin while area streams
             suspendUntil = DateTime.UtcNow.AddSeconds(3.0); // don't wander mid-teleport
-            UI.Notify("Gojo teleported to the plaza ~g~(sidewalk)");
+            GTA.UI.Notification.Show("Gojo teleported to the plaza ~g~(sidewalk)");
             return;
         }
         if (DateTime.UtcNow < holdUntil)

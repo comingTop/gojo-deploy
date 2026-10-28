@@ -67,9 +67,14 @@ public class AutoWalk : Script
         if (p.IsInCombat || p.IsShooting) return;
 
         // Standing still -> start a natural NPC-style wander.
+        // Task.WanderAround() is the SHVDN high-level wrapper over the
+        // TASK_WANDER_STANDARD native (proven to work on the player ped --
+        // see GTAForums "Bots in GTA V: automating player character walking").
+        // Player control can cancel it, so we simply re-issue whenever he has
+        // come to a stop, which keeps him strolling continuously.
         if (p.Speed < 0.5f)
         {
-            Function.Call(Hash.TASK_WANDER_STANDARD, p, 10f, 10);
+            p.Task.WanderAround();
         }
     }
 
@@ -77,6 +82,6 @@ public class AutoWalk : Script
     {
         Ped p = Game.Player.Character;
         if (p != null && p.Exists())
-            Function.Call(Hash.CLEAR_PED_TASKS, p);
+            p.Task.ClearAll();
     }
 }

@@ -6,31 +6,41 @@ using GTA.Native;
 // Gojo Auto-Walk  (ScriptHookVDotNet v2 loose-source script)
 //
 // Makes the player ped (Gojo) stroll around on his own like an ambient NPC so
-// the live has constant movement instead of a statue standing in one spot.
+// the live has constant movement instead of a statue, and can teleport him out
+// to a busy plaza so his wander reads as a sidewalk on stream.
 //
-// Uses ONLY raw Function.Call natives (the combination proven to compile and
-// run on this machine's SHVDN2) -- the high-level Task.WanderAround()/ClearAll()
-// helpers are NOT available here and break compilation of the whole script.
+// Uses raw Function.Call natives throughout (the combination proven on this
+// machine's SHVDN2).
 //
 // Behaviour:
-//   * ON by default. Toggle with F7 (on-screen notify).
-//   * F8 teleports Gojo out to a flat, pedestrian-heavy plaza (Legion Square)
-//     so his wander reads as a busy sidewalk on stream instead of a house.
+//   * ON by default. Toggle with F7.
+//   * F8 teleports Gojo to Legion Square (a flat, pedestrian-heavy downtown
+//     plaza). The teleport is done the PROVEN robust way (Native Trainer
+//     pattern): stream the target area with LOAD_SCENE + REQUEST_COLLISION,
+//     FREEZE the ped so he can't fall through the un-streamed map, move him,
+//     wait until collision has loaded around him, then un-freeze. Run on the
+//     tick thread so Wait() is legal (it is NOT inside the key handler).
 //   * Every few seconds, if Gojo is standing still, kick off a natural
 //     TASK_WANDER_STANDARD so he walks around by himself.
-//   * When a gift fires a Gojo power (keys H / J / U / Y / I -- same keys the
-//     orchestrator presses), wandering is paused and his tasks are cleared so
-//     the power reacts cleanly, then wandering resumes a few seconds later.
+//   * When a gift fires a Gojo power (keys H / J / U / Y / I), wandering is
+//     paused and his tasks are cleared so the power reacts cleanly, then it
+//     resumes a few seconds later.
 //   * Never interferes while he is in a vehicle, ragdolled, in combat,
 //     shooting, or dead.
 public class AutoWalk : Script
 {
     private bool enabled = true;
+    private bool teleportRequested = false;
     private DateTime suspendUntil = DateTime.MinValue;
     private DateTime nextCheck = DateTime.MinValue;
 
     private const double PowerPauseSeconds = 6.0;
     private const double CheckEverySeconds = 3.0;
+
+    // Legion Square, downtown Los Santos -- flat, open, lots of pedestrians.
+    private const float TpX = 195.17f;
+    private const float TpY = -933.77f;
+    private const float TpZ = 30.69f;
 
     public AutoWalk()
     {
@@ -51,7 +61,8 @@ public class AutoWalk : Script
 
         if (e.KeyCode == Keys.F8)
         {
-            TeleportToSidewalk();
+            // Defer to the tick thread so the collision-load wait is legal.
+            teleportRequested = true;
             return;
         }
 
@@ -65,6 +76,13 @@ public class AutoWalk : Script
 
     private void OnTick(object sender, EventArgs e)
     {
+        if (teleportRequested)
+        {
+            teleportRequested = false;
+            TeleportToSidewalk();
+            return;
+        }
+
         if (!enabled) return;
         if (DateTime.UtcNow < suspendUntil) return;
         if (DateTime.UtcNow < nextCheck) return;
@@ -75,7 +93,6 @@ public class AutoWalk : Script
         if (p.IsDead || p.IsInVehicle() || p.IsRagdoll) return;
         if (p.IsInCombat || p.IsShooting) return;
 
-        // Standing still -> start a natural NPC-style wander (raw native).
         if (p.Speed < 0.5f)
         {
             Function.Call(Hash.TASK_WANDER_STANDARD, p, 10f, 10);
@@ -89,18 +106,34 @@ public class AutoWalk : Script
             Function.Call(Hash.CLEAR_PED_TASKS, p);
     }
 
-    // Teleport Gojo to Legion Square -- a flat, open, pedestrian-heavy downtown
-    // plaza that reads as a busy sidewalk on stream. SET_ENTITY_COORDS is the
-    // proven native (last arg clears the area so he lands cleanly).
+    // Proven Native-Trainer teleport: stream the destination, freeze so the ped
+    // can't fall through un-streamed terrain, move him, wait for collision, then
+    // release. Runs on the tick thread so Wait() is valid here.
     private void TeleportToSidewalk()
     {
         Ped p = Game.Player.Character;
         if (p == null || !p.Exists()) return;
 
-        Function.Call(Hash.SET_ENTITY_COORDS, p,
-            195.17f, -933.77f, 30.69f, false, false, false, true);
+        // Ask the engine to stream the destination's collision/map in.
+        Function.Call(Hash.REQUEST_COLLISION_AT_COORD, TpX, TpY, TpZ);
+        Function.Call(Hash.LOAD_SCENE, TpX, TpY, TpZ);
+
+        // Hold him in place so he cannot fall through before it finishes.
+        Function.Call(Hash.FREEZE_ENTITY_POSITION, p, true);
+        Function.Call(Hash.SET_ENTITY_COORDS, p, TpX, TpY, TpZ, false, false, false, true);
         Function.Call(Hash.CLEAR_PED_TASKS, p);
-        suspendUntil = DateTime.UtcNow.AddSeconds(2.0);
+
+        int tries = 0;
+        while (!Function.Call<bool>(Hash.HAS_COLLISION_LOADED_AROUND_ENTITY, p) && tries < 40)
+        {
+            Function.Call(Hash.REQUEST_COLLISION_AT_COORD, TpX, TpY, TpZ);
+            Wait(50);
+            tries++;
+        }
+
+        Function.Call(Hash.FREEZE_ENTITY_POSITION, p, false);
+        // Let him settle a beat before the auto-wander kicks back in.
+        suspendUntil = DateTime.UtcNow.AddSeconds(1.5);
         UI.Notify("Gojo teleported to the plaza ~g~(sidewalk)");
     }
 }

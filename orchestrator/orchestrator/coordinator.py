@@ -36,6 +36,11 @@ async def run_live_session(
     """
     async for event in source.stream():
         reaction = await engine.handle_gift(event)
+        # Diagnostic: every gift's exact name+id as TikTok sends it, so an
+        # unmapped gift (e.g. a locale-named "Mini dino") can be mapped by id.
+        print(f"[gift] name={event.gift_name!r} id={event.gift_id} "
+              f"coins={event.total_coins} user={event.username!r} "
+              f"-> {reaction.id if reaction else 'NO MATCH'}", flush=True)
         await overlay.broadcast(top3_message(engine.state.top_gifters(3, now())))
         if reaction is not None:
             await overlay.broadcast(reaction_cue_message(reaction))

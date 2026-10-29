@@ -44,6 +44,18 @@
      "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
      "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},
 
+    {"id": "tinydino", "label": "Vermelho (Tiny Dino)", "gift": {"name": "Tiny Dino", "min_coins": 1},
+     "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
+     "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},
+
+    {"id": "tinydinosaur", "label": "Vermelho (Tiny Dinosaur)", "gift": {"name": "Tiny Dinosaur", "min_coins": 1},
+     "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
+     "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},
+
+    {"id": "minidinosaur", "label": "Vermelho (Mini Dinosaur)", "gift": {"name": "Mini Dinosaur", "min_coins": 1},
+     "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
+     "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},
+
     {"id": "chapeu_bigode", "label": "Azul (Chapeu e Bigode)", "gift": {"name": "Hat and Mustache", "min_coins": 99},
      "power": {"mod": "gojo", "key": "U"}, "action": {"command": "spawn_attackers", "params": {"count": 3}},
      "voice_clip": "voice/output/azul.wav", "overlay_cue": "menu.azul", "cooldown_s": 8},

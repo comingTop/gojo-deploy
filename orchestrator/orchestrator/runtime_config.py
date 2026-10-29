@@ -26,7 +26,9 @@ class EulerCfg(BaseModel):
 
 
 class AirgpuCfg(BaseModel):
-    stop_on_idle_minutes: int = 15
+    # Bill-protection idle timeout. Default kept high so a gift-live with normal
+    # lulls (or a truncated config.local.json) never auto-stops the VM mid-stream.
+    stop_on_idle_minutes: int = 180
 
 
 class VoiceCfg(BaseModel):

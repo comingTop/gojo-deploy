@@ -5,34 +5,33 @@ using GTA.Native;
 
 // Gojo Auto-Walk  (ScriptHookVDotNet v3 / Enhanced loose-source script)
 //
-// Makes the player ped (Gojo) stroll around on his own like an ambient NPC, and
-// can teleport him to a busy plaza so his wander reads as a sidewalk on stream.
+// Makes the player ped (Gojo) stroll around on his own like an ambient NPC.
 //
-// IMPORTANT: uses ONLY the three natives confirmed to exist on this machine's
-// SHVDN2 -- TASK_WANDER_STANDARD, CLEAR_PED_TASKS and SET_ENTITY_COORDS. (The
-// richer teleport helpers like HAS_COLLISION_LOADED_AROUND_ENTITY / LOAD_SCENE /
-// FREEZE_ENTITY_POSITION are NOT in this older enum and break compilation.)
+// Two proven rules (from GTA modding + testing):
+//   1. A player-controlled ped only plays the walk ANIMATION in place
+//      (treadmill). You must release player control (SET_PLAYER_CONTROL = false)
+//      so the AI actually translates him.
+//   2. Do NOT re-issue TASK_WANDER_STANDARD every tick -- that resets the task
+//      and he never moves. Issue it ONCE, then only re-issue if he has been
+//      stuck (not translating) for a few seconds.
 //
-// Behaviour:
 //   * ON by default. Toggle with F7.
 //   * F8 teleports the player to Legion Square (flat, pedestrian-heavy plaza).
-//     To stop him falling through un-streamed terrain we simply re-assert the
-//     coordinate every tick for ~2s (a "hold"), which pins him in place until
-//     the area's collision has streamed in -- no exotic natives needed.
-//   * Every few seconds, if he is standing still, start a natural
-//     TASK_WANDER_STANDARD so he walks around by himself.
-//   * On a Gojo power key (H / J / U / Y / I) wandering pauses so the reaction
-//     plays cleanly, then resumes.
+//   * On a Gojo power key (H / J / U / Y / I) control is handed back so the
+//     gift reaction plays cleanly, wandering pauses, then resumes afterward.
 public class AutoWalk : Script
 {
     private bool enabled = true;
     private bool teleportRequested = false;
+    private bool wandering = false;
     private DateTime holdUntil = DateTime.MinValue;
     private DateTime suspendUntil = DateTime.MinValue;
     private DateTime nextCheck = DateTime.MinValue;
+    private DateTime movedAt = DateTime.MinValue;
 
     private const double PowerPauseSeconds = 6.0;
-    private const double CheckEverySeconds = 3.0;
+    private const double CheckEverySeconds = 2.0;
+    private const double StuckSeconds = 5.0;
 
     // Legion Square, downtown Los Santos -- flat, open, lots of pedestrians.
     private const float TpX = 195.17f;
@@ -54,9 +53,10 @@ public class AutoWalk : Script
             GTA.UI.Notification.Show("Gojo Auto-Walk: " + (enabled ? "~g~ON" : "~r~OFF"));
             if (!enabled)
             {
-                // Restore control so toggling auto-walk OFF leaves Gojo playable.
+                // Restore control so toggling OFF leaves Gojo playable.
                 Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, true, 0);
                 ClearTasks();
+                wandering = false;
             }
             return;
         }
@@ -70,11 +70,12 @@ public class AutoWalk : Script
         if (e.KeyCode == Keys.H || e.KeyCode == Keys.J || e.KeyCode == Keys.U ||
             e.KeyCode == Keys.Y || e.KeyCode == Keys.I)
         {
+            // Hand control back so the gift power plays on a normal ped; wander
+            // (and the control release) resumes after the pause.
             suspendUntil = DateTime.UtcNow.AddSeconds(PowerPauseSeconds);
-            // Give control back so the gift power plays on a normally-controlled
-            // ped; wander (and the control release) resumes after the pause.
             Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, true, 0);
             ClearTasks();
+            wandering = false;
         }
     }
 
@@ -83,39 +84,47 @@ public class AutoWalk : Script
         Ped p = Game.Player.Character;
         if (p == null || !p.Exists()) return;
 
-        // --- Teleport handling (highest priority) ---
+        // --- Teleport (highest priority) ---
         if (teleportRequested)
         {
             teleportRequested = false;
+            wandering = false;
             SetCoords(p);
             Function.Call(Hash.CLEAR_PED_TASKS, p);
-            holdUntil = DateTime.UtcNow.AddSeconds(2.0);   // pin while area streams
+            holdUntil = DateTime.UtcNow.AddSeconds(2.0);    // pin while area streams
             suspendUntil = DateTime.UtcNow.AddSeconds(3.0); // don't wander mid-teleport
             GTA.UI.Notification.Show("Gojo teleported to the plaza ~g~(sidewalk)");
             return;
         }
         if (DateTime.UtcNow < holdUntil)
         {
-            SetCoords(p);   // keep snapping him to the spot so he can't fall through
+            SetCoords(p);   // keep snapping him so he can't fall through un-streamed terrain
             return;
         }
 
         // --- Auto-wander ---
         if (!enabled) return;
-        if (DateTime.UtcNow < suspendUntil) return;
+        if (DateTime.UtcNow < suspendUntil) { wandering = false; return; } // power playing
         if (DateTime.UtcNow < nextCheck) return;
         nextCheck = DateTime.UtcNow.AddSeconds(CheckEverySeconds);
 
-        if (p.IsDead || p.IsInVehicle() || p.IsRagdoll) return;
-        if (p.IsInCombat || p.IsShooting) return;
-
-        if (p.Speed < 0.5f)
+        if (p.IsDead || p.IsInVehicle() || p.IsRagdoll || p.IsInCombat || p.IsShooting)
         {
-            // Hand the ped fully to the AI so the wander task actually MOVES him.
-            // A player-controlled ped only plays the walk animation on the spot
-            // (treadmill) -- releasing control lets the AI translate him for real.
+            wandering = false;
+            return;
+        }
+
+        if (p.Speed > 0.5f) movedAt = DateTime.UtcNow;  // he's actually translating
+
+        bool stuck = wandering && (DateTime.UtcNow - movedAt).TotalSeconds > StuckSeconds;
+        if (!wandering || stuck)
+        {
+            // Release control so the AI MOVES him for real, then task ONCE.
             Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, false, 0);
+            Function.Call(Hash.CLEAR_PED_TASKS, p);
             Function.Call(Hash.TASK_WANDER_STANDARD, p, 10f, 10);
+            wandering = true;
+            movedAt = DateTime.UtcNow;
         }
     }
 

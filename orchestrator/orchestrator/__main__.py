@@ -63,6 +63,8 @@ async def _run_live(config_dir: Path) -> None:
 
     app_cfg = load_config(config_dir / "reactions.json")
     rt = load_runtime_config(config_dir / "config.local.json")
+    print(f"[orchestrator] starting -- tiktok=@{app_cfg.tiktok_username} "
+          f"reactions={len(app_cfg.reactions)} voice={rt.voice.device!r}", flush=True)
 
     state = StateStore(str(_repo_root() / "gojo.sqlite"), tz=app_cfg.timezone)
     engine = ReactionEngine(app_cfg, GtaAdapter(base_url=rt.gta_adapter.base_url), state)
@@ -80,10 +82,20 @@ async def _run_live(config_dir: Path) -> None:
                                   sign_api_key=rt.eulerstream.api_key or None)
     voice = VoicePlayer(root=str(_repo_root()), device=rt.voice.device)
 
-    tg = TelegramControl(rt.telegram.bot_token, controller, rt.telegram.allowed_chat_ids).build_app()
-    await tg.initialize()
-    await tg.start()
-    await tg.updater.start_polling()
+    # Telegram remote-control is optional: a saturated uplink can make its API
+    # time out, and that must NOT take the whole live (gift reactions) down.
+    tg = None
+    try:
+        tg = TelegramControl(rt.telegram.bot_token, controller, rt.telegram.allowed_chat_ids).build_app()
+        await tg.initialize()
+        await tg.start()
+        await tg.updater.start_polling()
+        print("[orchestrator] telegram control up", flush=True)
+    except Exception as e:  # noqa: BLE001 -- never let Telegram kill the live
+        print(f"[orchestrator] telegram unavailable ({e!r}); continuing without it", flush=True)
+        tg = None
+
+    print("[orchestrator] live session running -- waiting for gifts", flush=True)
 
     async def _watchdog_loop() -> None:
         while True:
@@ -96,9 +108,10 @@ async def _run_live(config_dir: Path) -> None:
             _watchdog_loop(),
         )
     finally:
-        await tg.updater.stop()
-        await tg.stop()
-        await tg.shutdown()
+        if tg is not None:
+            await tg.updater.stop()
+            await tg.stop()
+            await tg.shutdown()
 
 
 def main() -> None:

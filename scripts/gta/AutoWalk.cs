@@ -52,7 +52,12 @@ public class AutoWalk : Script
         {
             enabled = !enabled;
             GTA.UI.Notification.Show("Gojo Auto-Walk: " + (enabled ? "~g~ON" : "~r~OFF"));
-            if (!enabled) ClearTasks();
+            if (!enabled)
+            {
+                // Restore control so toggling auto-walk OFF leaves Gojo playable.
+                Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, true, 0);
+                ClearTasks();
+            }
             return;
         }
 
@@ -66,6 +71,9 @@ public class AutoWalk : Script
             e.KeyCode == Keys.Y || e.KeyCode == Keys.I)
         {
             suspendUntil = DateTime.UtcNow.AddSeconds(PowerPauseSeconds);
+            // Give control back so the gift power plays on a normally-controlled
+            // ped; wander (and the control release) resumes after the pause.
+            Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, true, 0);
             ClearTasks();
         }
     }
@@ -103,6 +111,10 @@ public class AutoWalk : Script
 
         if (p.Speed < 0.5f)
         {
+            // Hand the ped fully to the AI so the wander task actually MOVES him.
+            // A player-controlled ped only plays the walk animation on the spot
+            // (treadmill) -- releasing control lets the AI translate him for real.
+            Function.Call(Hash.SET_PLAYER_CONTROL, Game.Player.Handle, false, 0);
             Function.Call(Hash.TASK_WANDER_STANDARD, p, 10f, 10);
         }
     }

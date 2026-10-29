@@ -1,0 +1,164 @@
+{
+  "name": "Gojo",
+  "current_scene": "Gojo",
+  "current_program_scene": "Gojo",
+  "scene_order": [
+    {
+      "name": "Gojo"
+    }
+  ],
+  "sources": [
+    {
+      "name": "GTA V",
+      "id": "window_capture",
+      "versioned_id": "window_capture",
+      "settings": {
+        "window": "Grand Theft Auto V:grcWindow:GTA5.exe",
+        "priority": 1,
+        "method": 2,
+        "cursor": false,
+        "client_area": true
+      },
+      "mixers": 255,
+      "sync": 0,
+      "flags": 0,
+      "volume": 1.0,
+      "enabled": true,
+      "muted": false,
+      "hotkeys": {}
+    },
+    {
+      "name": "CABLE Output",
+      "id": "wasapi_input_capture",
+      "versioned_id": "wasapi_input_capture",
+      "settings": {
+        "device_id": "default",
+        "use_device_timing": false
+      },
+      "mixers": 255,
+      "sync": 0,
+      "flags": 0,
+      "volume": 1.0,
+      "enabled": true,
+      "muted": false,
+      "hotkeys": {}
+    },
+    {
+      "name": "Effects",
+      "id": "browser_source",
+      "versioned_id": "browser_source",
+      "settings": {
+        "is_local_file": true,
+        "local_file": "C:/gojo/overlays/effect.html",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "shutdown": false
+      },
+      "mixers": 255,
+      "sync": 0,
+      "flags": 0,
+      "volume": 1.0,
+      "enabled": true,
+      "muted": false,
+      "hotkeys": {}
+    },
+    {
+      "name": "Gojo",
+      "id": "scene",
+      "versioned_id": "scene",
+      "settings": {
+        "items": [
+          {
+            "name": "GTA V",
+            "id": 1,
+            "visible": true,
+            "locked": false,
+            "rot": 0.0,
+            "pos": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "align": 5,
+            "bounds_type": 0,
+            "bounds_align": 0,
+            "bounds": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "crop_left": 0,
+            "crop_top": 0,
+            "crop_right": 0,
+            "crop_bottom": 0
+          },
+          {
+            "name": "CABLE Output",
+            "id": 2,
+            "visible": true,
+            "locked": false,
+            "rot": 0.0,
+            "pos": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "align": 5,
+            "bounds_type": 0,
+            "bounds_align": 0,
+            "bounds": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "crop_left": 0,
+            "crop_top": 0,
+            "crop_right": 0,
+            "crop_bottom": 0
+          },
+          {
+            "name": "Effects",
+            "id": 3,
+            "visible": true,
+            "locked": false,
+            "rot": 0.0,
+            "pos": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "align": 5,
+            "bounds_type": 0,
+            "bounds_align": 0,
+            "bounds": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "crop_left": 0,
+            "crop_top": 0,
+            "crop_right": 0,
+            "crop_bottom": 0
+          }
+        ],
+        "id_counter": 3
+      },
+      "mixers": 255,
+      "sync": 0,
+      "flags": 0,
+      "volume": 1.0,
+      "enabled": true,
+      "muted": false,
+      "hotkeys": {}
+    }
+  ],
+  "groups": [],
+  "transitions": []
+}

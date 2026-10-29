@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Efeitos do Gojo</title>
+<style>
+  /* Transparent full-screen OBS browser source, layered OVER the GTA window
+     capture. When the orchestrator broadcasts a reaction `cue`, this plays a
+     power-coloured aura/energy burst centred on screen (where Gojo is), so a
+     gift produces an unmistakable on-screen effect around him. */
+  html, body {
+    margin: 0; width: 100%; height: 100%; overflow: hidden;
+    background: transparent;
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+  #stage { position: fixed; inset: 0; pointer-events: none; }
+
+  /* Centre of the aura — Gojo sits roughly centre-frame. */
+  .fx {
+    position: absolute; left: 50%; top: 56%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+
+  /* Full-screen colour wash for the big ultimates (domain / six-eyes). */
+  #wash {
+    position: fixed; inset: 0; opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle at 50% 56%,
+                 var(--c1) 0%, rgba(0,0,0,0) 62%);
+  }
+
+  /* Expanding energy rings. */
+  .ring {
+    position: absolute; left: 50%; top: 56%;
+    width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    border-radius: 50%;
+    border: 6px solid var(--c1);
+    box-shadow: 0 0 40px 10px var(--c1), inset 0 0 30px var(--c2);
+    opacity: 0;
+  }
+  /* Central radial glow / core flash. */
+  #core {
+    position: absolute; left: 50%; top: 56%;
+    width: 520px; height: 520px; margin: -260px 0 0 -260px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+                 var(--c2) 0%, var(--c1) 26%, rgba(0,0,0,0) 64%);
+    opacity: 0; filter: blur(2px);
+  }
+  /* Power name banner. */
+  #banner {
+    position: absolute; left: 50%; top: 20%;
+    transform: translate(-50%, 0) scale(.8);
+    opacity: 0;
+    font-weight: 900; letter-spacing: .14em; font-size: 54px;
+    color: #fff; white-space: nowrap;
+    text-shadow: 0 0 18px var(--c1), 0 0 40px var(--c1), 0 3px 10px rgba(0,0,0,.6);
+    -webkit-text-stroke: 2px rgba(255,255,255,.25);
+  }
+  #sub {
+    position: absolute; left: 50%; top: 20%;
+    transform: translate(-50%, 66px);
+    opacity: 0; font-weight: 700; letter-spacing: .3em; font-size: 20px;
+    color: var(--c1); text-shadow: 0 0 14px var(--c1);
+  }
+
+  /* ---- animations ---- */
+  @keyframes ringOut {
+    0%   { opacity: 0;   transform: scale(.2); }
+    12%  { opacity: .95; }
+    100% { opacity: 0;   transform: scale(26); }
+  }
+  @keyframes coreFlash {
+    0%   { opacity: 0;   transform: scale(.4); }
+    18%  { opacity: .95; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.5); }
+  }
+  @keyframes washIn {
+    0%   { opacity: 0; }
+    20%  { opacity: .85; }
+    80%  { opacity: .7; }
+    100% { opacity: 0; }
+  }
+  @keyframes bannerIn {
+    0%   { opacity: 0; transform: translate(-50%,0) scale(.8); }
+    14%  { opacity: 1; transform: translate(-50%,0) scale(1.06); }
+    24%  { transform: translate(-50%,0) scale(1); }
+    82%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%,-14px) scale(1); }
+  }
+  @keyframes subIn {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    82%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .play-core   { animation: coreFlash 1.5s ease-out forwards; }
+  .play-wash   { animation: washIn   2.6s ease-out forwards; }
+  .play-banner { animation: bannerIn 2.6s ease-out forwards; }
+  .play-sub    { animation: subIn    2.6s ease-out forwards; }
+  .play-ring   { animation: ringOut  1.9s cubic-bezier(.2,.7,.3,1) forwards; }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div id="wash"></div>
+    <div id="core"></div>
+    <div id="ring1" class="ring"></div>
+    <div id="ring2" class="ring"></div>
+    <div id="ring3" class="ring"></div>
+    <div id="banner"></div>
+    <div id="sub"></div>
+  </div>
+
+<script>
+  // Power styling keyed by reaction id (ids come straight from the orchestrator
+  // cue, which mirrors orchestrator/config/reactions.json). c1 = main colour,
+  // c2 = hot core colour, name = big banner, sub = JJK technique line,
+  // wash = full-screen colour flood for the big ultimates.
+  const FX = {
+    flash:      { c1:"#4aa8ff", c2:"#eaf6ff", name:"INFINITO",            sub:"MUGEN · LIMITLESS",      wash:false },
+    infinito:   { c1:"#4aa8ff", c2:"#eaf6ff", name:"INFINITO",            sub:"MUGEN · LIMITLESS",      wash:false },
+    azul:       { c1:"#2e7bff", c2:"#bfe0ff", name:"AZUL",                sub:"LAPSE · ATRAÇÃO",        wash:false },
+    vermelho:   { c1:"#ff3b4e", c2:"#fff0c2", name:"VERMELHO",            sub:"REVERSAL RED · REPULSÃO",wash:false },
+    roxo:       { c1:"#a35bff", c2:"#ffffff", name:"ROXO",                sub:"HOLLOW PURPLE",          wash:false },
+    seis_olhos: { c1:"#38e1d6", c2:"#eafffb", name:"SEIS OLHOS",          sub:"SIX EYES",               wash:true  },
+    capivara:   { c1:"#38e1d6", c2:"#eafffb", name:"SEIS OLHOS",          sub:"SIX EYES",               wash:true  },
+    dominio:    { c1:"#8a2bff", c2:"#1a0730", name:"EXPANSÃO DE DOMÍNIO", sub:"VAZIO ILIMITADO",        wash:true  },
+    minidino:   { c1:"#ff3b4e", c2:"#fff0c2", name:"VERMELHO",            sub:"REVERSAL RED · REPULSÃO",wash:false },
+    tinydiny:   { c1:"#ff3b4e", c2:"#fff0c2", name:"VERMELHO",            sub:"REVERSAL RED · REPULSÃO",wash:false },
+    chapeu_bigode:{c1:"#2e7bff",c2:"#bfe0ff", name:"AZUL",                sub:"LAPSE · ATRAÇÃO",        wash:false },
+    ilha:       { c1:"#8a2bff", c2:"#1a0730", name:"EXPANSÃO DE DOMÍNIO", sub:"VAZIO ILIMITADO",        wash:true  },
+  };
+  const DEFAULT = { c1:"#4aa8ff", c2:"#eaf6ff", name:"GOJO", sub:"", wash:false };
+
+  const root   = document.documentElement;
+  const wash   = document.getElementById("wash");
+  const core   = document.getElementById("core");
+  const rings  = [document.getElementById("ring1"), document.getElementById("ring2"), document.getElementById("ring3")];
+  const banner = document.getElementById("banner");
+  const sub    = document.getElementById("sub");
+
+  // Re-trigger a CSS animation by removing the class, forcing reflow, re-adding.
+  function restart(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  function play(id){
+    const fx = FX[id] || DEFAULT;
+    root.style.setProperty("--c1", fx.c1);
+    root.style.setProperty("--c2", fx.c2);
+    banner.textContent = fx.name;
+    sub.textContent    = fx.sub;
+
+    restart(core, "play-core");
+    restart(banner, "play-banner");
+    restart(sub, "play-sub");
+    if (fx.wash) restart(wash, "play-wash"); else wash.classList.remove("play-wash");
+    // Stagger the rings so it reads as a pulse.
+    rings.forEach((r, i) => setTimeout(() => restart(r, "play-ring"), i * 140));
+  }
+
+  // Manual test:  effect.html?test=flash   (also cycles with ?test=all)
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("test")) {
+    const t = qs.get("test");
+    if (t === "all") {
+      const ids = Object.keys(FX); let i = 0;
+      setInterval(() => play(ids[i++ % ids.length]), 3000);
+      play(ids[0]);
+    } else { play(t); setInterval(() => play(t), 3200); }
+  }
+
+  const WS = qs.get("ws") || "ws://127.0.0.1:8765";
+  function connect(){
+    const ws = new WebSocket(WS);
+    ws.onmessage = ev => {
+      try { const m = JSON.parse(ev.data); if (m.type === "cue") play(m.id); } catch (e) {}
+    };
+    ws.onclose = () => setTimeout(connect, 1500);
+  }
+  connect();
+</script>
+</body>
+</html>

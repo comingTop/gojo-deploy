@@ -18,8 +18,9 @@ CoordMode, Mouse, Screen
 global STORY_X := 0.925   ; STORY MODE x as a fraction of the GTA window width
 global STORY_Y := 0.96    ; STORY MODE y as a fraction of the GTA window height
 
-; Wait up to 10 minutes for the GTA window to appear (cold boot + Rockstar launcher).
-WinWait, Grand Theft Auto V,, 600
+; Wait up to 15 minutes for the GTA window to appear (cold boot: Epic start + retry +
+; Rockstar launcher can push the window out well past 10 minutes).
+WinWait, Grand Theft Auto V,, 900
 if ErrorLevel
     ExitApp
 

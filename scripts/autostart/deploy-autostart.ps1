@@ -6,7 +6,7 @@ $base = 'https://raw.githubusercontent.com/comingTop/gojo-deploy/main'
 $stage = Join-Path $env:TEMP ([guid]::NewGuid().ToString())
 New-Item -ItemType Directory $stage | Out-Null
 $files = @{}
-foreach ($name in @('start-session.ps1','run-orchestrator.cmd','run-orchestrator.ps1','install-autostart.cmd','install-autostart.ps1','deploy-autostart.cmd','deploy-autostart.ps1')) {
+foreach ($name in @('start-session.ps1','run-orchestrator.cmd','run-orchestrator.ps1','install-autostart.cmd','install-autostart.ps1','deploy-autostart.cmd','deploy-autostart.ps1','gta-storymode.ahk')) {
     $files["scripts/autostart/$name"] = "C:\gojo\autostart\$name"
 }
 $files['scripts/gta/AutoGojo.cs'] = "$GtaScripts\AutoGojo.cs"

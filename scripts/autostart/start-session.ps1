@@ -11,6 +11,19 @@ try {
         Start-Process 'com.epicgames.launcher://apps/9d2d0eb64d5c44529cece33fe2a46482?action=launch&silent=true'
         Log 'Epic launch requested'
     }
+    # GTA always boots to the landing menu and waits for STORY MODE to be picked.
+    # The AutoHotkey clicker selects it and exits itself once the in-game webhook
+    # answers (free-roam reached), so it never interferes with gameplay. Requires the
+    # ConsentPromptBehaviorAdmin=0 set by install-autostart so the Rockstar launcher
+    # elevates without a UAC prompt.
+    $ahkExe = 'C:\gojo\tools\AutoHotkeyU64.exe'
+    $ahkScript = 'C:\gojo\autostart\gta-storymode.ahk'
+    if ((Test-Path $ahkExe) -and (Test-Path $ahkScript)) {
+        Start-Process $ahkExe -ArgumentList "`"$ahkScript`""
+        Log 'STORY MODE auto-clicker (AutoHotkey) started'
+    } else {
+        Log 'AutoHotkey or gta-storymode.ahk missing; STORY MODE must be selected manually'
+    }
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     $ready = $false
     while ((Get-Date) -lt $deadline) {

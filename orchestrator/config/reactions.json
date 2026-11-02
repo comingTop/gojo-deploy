@@ -8,10 +8,6 @@
      "power": {"mod": "gojo", "key": "H"}, "action": {"command": "health", "params": {}},
      "voice_clip": "voice/output/infinito.wav", "overlay_cue": "menu.infinito", "cooldown_s": 6},
 
-    {"id": "azul", "label": "Azul - Atracao", "gift": {"name": "GG", "min_coins": 1},
-     "power": {"mod": "gojo", "key": "U"}, "action": {"command": "spawn_attackers", "params": {"count": 3}},
-     "voice_clip": "voice/output/azul.wav", "overlay_cue": "menu.azul", "cooldown_s": 6},
-
     {"id": "vermelho", "label": "Vermelho - Repulsao", "gift": {"name": "Perfume", "min_coins": 20},
      "power": {"mod": "gojo", "key": "J"}, "action": {"command": "explode_vehicle", "params": {}},
      "voice_clip": "voice/output/vermelho.wav", "overlay_cue": "menu.vermelho", "cooldown_s": 8},

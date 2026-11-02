@@ -26,7 +26,7 @@ using GTA.Math;
 //   Hot-reload after edits with the Insert key; no GTA relaunch needed.
 public class GojoCam : Script
 {
-    private bool enabled = false; // flip to true once tuned so lives open locked
+    private bool enabled = true; // ON by default so lives open in the locked front view (F6 to toggle off)
     private Camera cam = null;
     private Vector3 smoothedPos;
     private Vector3 smoothedAim;

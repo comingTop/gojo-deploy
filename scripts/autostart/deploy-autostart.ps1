@@ -11,6 +11,7 @@ foreach ($name in @('start-session.ps1','run-orchestrator.cmd','run-orchestrator
 }
 $files['scripts/gta/AutoGojo.cs'] = "$GtaScripts\AutoGojo.cs"
 $files['scripts/gta/AutoWalk.cs'] = "$GtaScripts\AutoWalk.cs"
+$files['scripts/gta/GojoCam.cs'] = "$GtaScripts\GojoCam.cs"
 $files['overlays/effect.html'] = 'C:\gojo\overlays\effect.html'
 $files['obs/Gojo.json'] = 'C:\gojo\obs\Gojo.json'
 $files['obs/profile.json'] = 'C:\gojo\obs\profile.json'

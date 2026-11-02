@@ -7,6 +7,41 @@ New-Item -ItemType Directory -Force C:\gojo | Out-Null
 function Log($Message) { Add-Content C:\gojo\autostart.log "$(Get-Date -Format o) [session] $Message" }
 try {
     Log 'Starting session; operator must verify preview before Go LIVE'
+
+    # Self-update: pull the latest GTA scripts + reaction config from main so the
+    # cloud always matches the repo (GojoCam default-ON, invincibility, gift fixes)
+    # WITHOUT a manual deploy. Runs before GTA launches so the game loads the fresh
+    # scripts. Best-effort: a network failure or bad download must NEVER block the
+    # session, and we stage to <file>.new then atomically move so a partial download
+    # can't corrupt a live file.
+    $raw = 'https://raw.githubusercontent.com/comingTop/gojo-deploy/main'
+    $gtaScripts = 'C:\Program Files\Epic Games\GTAV\scripts'
+    $updates = @{
+        "$raw/scripts/gta/AutoGojo.cs"             = "$gtaScripts\AutoGojo.cs"
+        "$raw/scripts/gta/AutoWalk.cs"             = "$gtaScripts\AutoWalk.cs"
+        "$raw/scripts/gta/GojoCam.cs"              = "$gtaScripts\GojoCam.cs"
+        "$raw/orchestrator/config/reactions.json"  = 'C:\gojo\src\gojo-deploy-main\orchestrator\config\reactions.json'
+    }
+    foreach ($url in $updates.Keys) {
+        $dest = $updates[$url]
+        $tmp = "$dest.new"
+        try {
+            if (Test-Path (Split-Path $dest)) {
+                Invoke-WebRequest $url -UseBasicParsing -TimeoutSec 20 -OutFile $tmp
+                if ((Test-Path $tmp) -and (Get-Item $tmp).Length -gt 0) {
+                    Move-Item $tmp $dest -Force
+                    Log "self-update: refreshed $dest"
+                } else {
+                    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                    Log "self-update: empty download; kept existing $dest"
+                }
+            }
+        } catch {
+            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+            Log "self-update: skip $url ($($_.Exception.Message))"
+        }
+    }
+
     $launchUri = 'com.epicgames.launcher://apps/9d2d0eb64d5c44529cece33fe2a46482?action=launch&silent=true'
     if (-not (Get-Process GTA5* -ErrorAction SilentlyContinue)) {
         # Cold boot: a launch URI fired before the Epic Launcher is up only starts Epic

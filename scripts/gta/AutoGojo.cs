@@ -43,6 +43,7 @@ public class AutoGojo : Script
         }
         wasDead = false;
         lastPed = p.Handle;
+        EnsureInvincible(p);
         if (!pending || DateTime.UtcNow < readyAt) return;
         if (Function.Call<int>(Hash.GET_ENTITY_MODEL, p) == GojoModel)
         {
@@ -80,5 +81,19 @@ public class AutoGojo : Script
         loading = false;
         pending = false;
         GTA.UI.Notification.Show("AutoGojo: ~g~ready~s~ (F9 to re-apply)");
+    }
+
+    // Gojo "blindado": takes no damage and can never die, so attacker peds,
+    // traffic, explosions or police can never drop the live (client request
+    // 2026-11-02). Thematically this is Gojo's Infinity/Limitless -- nothing
+    // touches him. Re-applied every tick because a respawn or SET_PLAYER_MODEL
+    // resets these flags on the fresh ped.
+    private void EnsureInvincible(Ped p)
+    {
+        Function.Call(Hash.SET_ENTITY_INVINCIBLE, p, true);
+        Function.Call(Hash.SET_PLAYER_INVINCIBLE, Game.Player.Handle, true);
+        // bullet, fire, explosion, collision, melee, steam, (unused), drown
+        Function.Call(Hash.SET_ENTITY_PROOFS, p, true, true, true, true, true, true, false, true);
+        if (p.Health < p.MaxHealth) p.Health = p.MaxHealth;
     }
 }
